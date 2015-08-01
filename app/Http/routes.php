@@ -11,6 +11,11 @@
 |
 */
 
-Route::get('/', function () {
-    return View::make("welcome");
+Route::group(['middleware' => 'auth'], function(){
+    Route::get('/', 'HomeController@index');
+    Route::get(['home'], 'HomeController@index');
 });
+
+Route::controllers([
+    'auth' => 'Auth\AuthController',
+]);

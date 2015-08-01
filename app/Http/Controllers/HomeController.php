@@ -30,7 +30,7 @@ class HomeController extends Controller {
 	 */
 	public function index()
 	{
-        return View();
+        return view('home.index');
 	}
 
 }
