@@ -12,8 +12,11 @@
 */
 
 Route::group(['middleware' => 'auth'], function(){
-    Route::get('/', 'HomeController@index');
-    Route::get(['home'], 'HomeController@index');
+    Route::get('/', function(){
+        return redirect('chat');
+    });
+    Route::get('chat', 'ChatController@index');
+    Route::get('loadHistory/{user}', 'ChatController@loadHistory');
 });
 
 Route::controllers([

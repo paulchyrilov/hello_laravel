@@ -1,6 +1,10 @@
 <?php namespace App\Http\Controllers;
 
-class HomeController extends Controller {
+use App\Message;
+use App\User;
+use Illuminate\Support\Facades\Auth;
+
+class ChatController extends Controller {
 
 	/*
 	|--------------------------------------------------------------------------
@@ -30,7 +34,16 @@ class HomeController extends Controller {
 	 */
 	public function index()
 	{
-        return view('home.index');
+        $users = User::where('username', '!=', 'admin')->where('id', '!=', Auth::user()->id)->get();
+
+        return view('chat.index', compact('users'));
 	}
+
+    public function loadHistory(User $user)
+    {
+        $messages = Auth::user()->historyWithUser($user->id);
+
+        return $messages;
+    }
 
 }

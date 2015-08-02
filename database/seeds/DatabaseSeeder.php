@@ -27,6 +27,9 @@ class UserTableSeeder extends Seeder {
         DB::table('users')->delete();
 
         \App\User::create(['email' => 'admin@admin.lo', 'username' => 'admin', 'password' => bcrypt('admin')]);
+        \App\User::create(['email' => 'test1@test.lo', 'username' => 'test1', 'password' => bcrypt('123')]);
+        \App\User::create(['email' => 'test2@test.lo', 'username' => 'test2', 'password' => bcrypt('123')]);
+        \App\User::create(['email' => 'test3@test.lo', 'username' => 'test3', 'password' => bcrypt('123')]);
     }
 
 }
