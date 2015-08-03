@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Validator;
 use App\Http\Controllers\Controller;
@@ -23,6 +24,8 @@ class AuthController extends Controller
     */
 
     use AuthenticatesAndRegistersUsers, ThrottlesLogins;
+
+    protected $username = 'login';
 
     /**
      * Create a new authentication controller instance.
@@ -68,4 +71,51 @@ class AuthController extends Controller
     {
         return Auth::user()->username == 'admin' ? 'admin' : 'chat';
     }
+
+    /**
+     * Get the needed authorization credentials from the request.
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @return array
+     */
+    protected function getCredentials(Request $request)
+    {
+        $login = $request->get('login');
+
+        if(filter_var($login, FILTER_VALIDATE_EMAIL)) {
+            return ['email' => $login, 'password' => $request->get('password')];
+        } else {
+            return ['username' => $login, 'password' => $request->get('password')];
+        }
+
+    }
+
+    public function postRegister(Request $request)
+    {
+        $registrationData = $request->get('register');
+
+        $validator = $this->validator($registrationData);
+
+        if ($validator->fails()) {
+            $this->throwValidationException(
+                $request, $validator
+            );
+        }
+
+        Auth::login($this->create($registrationData));
+
+        return redirect($this->redirectPath());
+    }
+
+    /**
+     * Show the application registration form.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getRegister()
+    {
+        return redirect(url('auth/login'));
+    }
+
+
 }
