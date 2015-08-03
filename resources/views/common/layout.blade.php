@@ -16,6 +16,17 @@
 
     @include('common.navbar')
 
+    @if (Session::has('flash_notification'))
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    @include('flash::message')
+                </div>
+            </div>
+        </div>
+    @endif
+
+
     @if (count($errors) > 0)
         <div class="container-fluid">
             <div class="row">

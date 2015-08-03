@@ -10,12 +10,16 @@
 | and give it the controller to call when that URI is requested.
 |
 */
+Route::model('user', 'App\User');
+Route::model('message', 'App\Message');
 
 Route::group(['middleware' => 'auth'], function(){
     Route::get('/', function(){
         return redirect('chat');
     });
     Route::get('chat', 'ChatController@index');
+    Route::get('admin', ['middleware' => 'admin', 'uses' => 'AdminController@index']);
+    Route::get('message/{message}/delete', ['middleware' => 'admin', 'uses' => 'AdminController@deleteMessage']);
     Route::get('loadHistory/{user}', 'ChatController@loadHistory');
 });
 
