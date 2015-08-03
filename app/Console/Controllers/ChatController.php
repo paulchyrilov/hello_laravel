@@ -2,6 +2,7 @@
 namespace App\Console\Controllers;
 
 use App\Message;
+use App\User;
 use Ratchet\ConnectionInterface;
 use Ratchet\MessageComponentInterface;
 
@@ -11,6 +12,8 @@ class ChatController implements MessageComponentInterface
     protected $clients;
 
     protected $userClients;
+
+    protected $resourceUsers;
 
     public function __construct() {
         $this->clients = new \SplObjectStorage;
@@ -61,26 +64,29 @@ class ChatController implements MessageComponentInterface
 
     /**
      * Triggered when a client sends data through the socket
-     * @param  \Ratchet\ConnectionInterface $from The socket/connection that sent the message to your application
+     * @param  \Ratchet\ConnectionInterface $client The socket/connection that sent the message to your application
      * @param  string $msg The message received
      * @throws \Exception
      */
-    function onMessage(ConnectionInterface $from, $msg)
+    function onMessage(ConnectionInterface $client, $msg)
     {
         $msg = json_decode($msg, true);
 
         if(isset($msg['command'])) {
             switch ($msg['command']) {
                 case 'setUser':
-                    if(isset($msg['user'])) {
-                        $this->setUserClient($msg['user'], $from);
-                    }
+                    $this->setUserClient(isset($msg['token']) ? $msg['token'] : null, $client);
                 default:
             }
         } else {
             if(isset($msg['from']) && isset($msg['to']) && isset($msg['text'])) {
+                if(!isset($this->resourceUsers[$client->resourceId])) {
+                    $client->close();
+                    return;
+                }
+                $from = $this->resourceUsers[$client->resourceId]->id;
                 $message = new Message();
-                $message->setAttribute('sender_id', $msg['from']);
+                $message->setAttribute('sender_id', $from);
                 $message->setAttribute('recipient_id', $msg['to']);
                 $message->setAttribute('text', $msg['text']);
                 $message->save();
@@ -90,26 +96,33 @@ class ChatController implements MessageComponentInterface
                     $recipient->send($message->toJson());
                 }
 
-                $from->send($message->toJson());
+                $client->send($message->toJson());
 
                 echo sprintf('Connection %d sending message "%s" to %d' . "\n"
-                    , $msg['from'], $msg['text'], $msg['to']);
+                    , $from, $msg['text'], $msg['to']);
             }
         }
 
     }
 
-    protected function setUserClient($userId, $client)
+    protected function setUserClient($token, ConnectionInterface $client)
     {
-
-        echo 'Resource ' . $client->resourceId . ' associated to user ' . $userId;
-        $this->userClients[$userId] = $client;
+        $user = User::where('wstoken', $token)->first();
+        if(!$user instanceof User) {
+            $client->close();
+            return;
+        }
+        echo 'Resource ' . $client->resourceId . ' associated to user ' . $user->id . "\n";
+        $this->userClients[$user->id] = $client;
+        $this->resourceUsers[$client->resourceId] = $user;
     }
 
     protected function detachUserClient($conn)
     {
+        unset($this->resourceUsers[$conn->resourceId]);
         $userId = array_search($conn, $this->userClients);
         if($userId) {
+            echo 'User ' . $userId . ' detached from resource ' . $conn->resourceId . "\n";
             unset($this->userClients[$userId]);
         }
     }

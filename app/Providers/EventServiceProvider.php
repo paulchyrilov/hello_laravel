@@ -13,8 +13,11 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        'App\Events\SomeEvent' => [
-            'App\Listeners\EventListener',
+        'auth.login' => [
+            'App\Listeners\AuthListener@login',
+        ],
+        'auth.logout' => [
+            'App\Listeners\AuthListener@logout',
         ],
     ];
 

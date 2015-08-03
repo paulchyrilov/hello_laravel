@@ -2,8 +2,11 @@
 
 @section('content')
 
+    <link rel="stylesheet" href="/css/chat.css">
+
     <script type="text/javascript">
         var user = "<?= Auth::user()->id ?>",
+            token = "<?= Auth::user()->wstoken ?>",
             users = {!! $users->toJson() !!},
             port = "{{ isset($chatPort) ? $chatPort : '9090' }}",
             uri = "<?= explode(':', str_replace('http://', '', str_replace('https://', '', App::make('url')->to('/'))))[0]; ?>";
@@ -18,6 +21,8 @@
                 <div class="panel-body">
                     <div id="chatMessages">
                     </div>
+                </div>
+                <div class="panel-footer">
                     <div style="display:table; width: 100%;">
                         <input style="display:table-cell; width: 100%;"type="text" name="chatText" id="chatText" />
                     </div>

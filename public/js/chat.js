@@ -31,6 +31,8 @@ $(document).ready(function(){
             }
             if(this.dialogStarted(userId)) {
                 this.addMessage(message);
+                var $container = $("#chatMessages");
+                $container.scrollTop($container[0].scrollHeight);
             }
         },
         addMessage : function(message) {
@@ -80,15 +82,19 @@ $(document).ready(function(){
         chat.newMessages[userId] = 0;
         chat.currentRecipient = userId;
 
+        var $container = $("#chatMessages");
+
         if(!chat.dialogStarted(userId)) {
             $.get($element.data('history'), function(data){
                 $element.addClass('list-group-item-success');
                 chat.loadHistory(userId, data);
-                $("#chatMessages").html(chat.getDialog(userId));
+                $container.html(chat.getDialog(userId));
+                $container.scrollTop($container[0].scrollHeight);
             })
         } else {
             $element.addClass('list-group-item-success');
-            $("#chatMessages").html(chat.getDialog(userId));
+            $container.html(chat.getDialog(userId));
+            $container.scrollTop($container[0].scrollHeight);
         }
     });
 
@@ -113,7 +119,7 @@ $(document).ready(function(){
 
     socket.onopen = function(e)
     {
-        socket.sendWhenReady(JSON.stringify({command: 'setUser', user : user}), 1000);
+        socket.sendWhenReady(JSON.stringify({command: 'setUser', token : token}), 1000);
 
         $.notify("Connection established!", 'info');
     };
